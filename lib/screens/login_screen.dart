@@ -1,13 +1,20 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:html' as html;
 
 import 'package:chat_app/constants.dart';
 import 'package:chat_app/controllers/login_screen_controller.dart';
 import 'package:chat_app/controllers/main_controller.dart';
 import 'package:chat_app/widgets/text_button.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:country_list/country_list.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+
+class ResponsiveController extends GetxController {}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -34,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     userPhoneNumberController.addListener(() =>
         loginController.userPhoneNumber.value = userPhoneNumberController.text);
     super.initState();
+    log(loginController.countryCodes.toString());
   }
 
   @override
@@ -53,95 +61,93 @@ class _LoginScreenState extends State<LoginScreen> {
     return SafeArea(
       child: Scaffold(
         body: Container(
-          height: Get.height,
-          width: Get.width,
+          width: MediaQuery.of(context).size.width,
           color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                        child: Image.asset(
-                            'assets/images/login_illustration.png'),),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(left: Get.width * 0.18),
-                                child: Text(
-                                  'Enter your phone number',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                    fontSize: Get.width * 0.048,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.more_vert,
-                                color: isDarkMode ? Colors.white : Colors.black,
-                                size: Get.width * 0.06,
-                              ),
-                            ],
+          padding: EdgeInsets.symmetric(
+              horizontal: Get.width < 768 ? Get.width * 0.02 : 0.0),
+          child: Row(
+            children: [
+              Get.width >= 768
+                  ? Expanded(
+                      child:
+                          Image.asset('assets/images/login_illustration.png'),
+                    )
+                  : const SizedBox.shrink(),
+              Expanded(
+                child: Container(
+                  color: Colors.transparent,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.02,
+                  ),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: Get.width * 0.02,
+                        ),
+                        child: Text(
+                          'Enter your phone number',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                            child: RichText(
-                              textAlign: TextAlign.center,
-                              text: TextSpan(
-                                text:
-                                    'Chatmate will send an SMS message to verify your phone number. ',
-                                style: TextStyle(
-                                  fontSize: Get.width * 0.038,
-                                  color:
-                                      isDarkMode ? Colors.white : Colors.black,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: 'What\'s my number?',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: Get.width * 0.038,
-                                    ),
-                                  ),
-                                ],
+                        ),
+                      ),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text:
+                              'Chatmate will send an SMS message to verify your phone number. ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text: 'What\'s my number?',
+                              style: TextStyle(
+                                color: primarySwatchColor,
+                                fontSize: 14,
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                      Theme(
+                        data: ThemeData(
+                          focusColor: Colors.teal.shade300,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: Get.height * 0.02,
                           ),
-                          Obx(
+                          child: Obx(
                             () => DropdownButton<String>(
                               value: loginController.selectedCountry.value,
                               dropdownColor:
                                   isDarkMode ? Colors.black : Colors.white,
-                              alignment: Alignment.center,
+                              alignment: AlignmentDirectional.center,
                               underline: Container(
                                 height: 1.5,
-                                color: primarySwatchColor,
+                                color: Colors.teal,
                               ),
-                              icon: const Icon(
+                              isExpanded: true,
+                              icon: Icon(
                                 Icons.arrow_drop_down,
-                                color: primarySwatchColor,
+                                color: primarySwatchColor.shade700,
                               ),
                               style: TextStyle(
                                 color: isDarkMode ? Colors.white : Colors.black,
-                                fontSize: Get.width * 0.038,
+                                fontSize: 16,
                               ),
                               items: Countries.list
                                   .map(
                                     (country) => DropdownMenuItem<String>(
+                                      alignment: AlignmentDirectional.center,
                                       child: Text(country.name),
                                       value: country.name,
                                     ),
@@ -166,127 +172,174 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12.0, horizontal: 8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: countryDialCodeController,
-                                    maxLength: 4,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontSize: 18.0,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      counterText: '',
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: primarySwatchColor,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      prefixText: '+',
-                                      prefixStyle: TextStyle(
-                                          fontSize: 18.0,
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.w400),
-                                    ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: TextFormField(
+                              controller: countryDialCodeController,
+                              maxLength: 4,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white : Colors.black,
+                                fontSize: 16.0,
+                              ),
+                              decoration: const InputDecoration(
+                                counterText: '',
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: primarySwatchColor,
+                                    width: 1.5,
                                   ),
                                 ),
-                                const SizedBox(
-                                  width: 12.0,
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: TextFormField(
-                                    controller: userPhoneNumberController,
-                                    maxLength: 12,
-                                    keyboardType: TextInputType.phone,
-                                    style: TextStyle(
-                                      color: isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontSize: 18.0,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      counterText: '',
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: primarySwatchColor,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                prefixText: '+',
+                                prefixStyle: TextStyle(
+                                    fontSize: 16.0,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w400),
+                              ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12.0),
-                            child: Text(
-                              'Carrier SMS charges may apply',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 16.0,
+                          Expanded(
+                            flex: 3,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Get.width * 0.02,
+                              ),
+                              child: TextFormField(
+                                controller: userPhoneNumberController,
+                                maxLength: 12,
+                                keyboardType: TextInputType.phone,
+                                style: TextStyle(
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
+                                  fontSize: 16.0,
+                                ),
+                                decoration: const InputDecoration(
+                                  counterText: '',
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: primarySwatchColor,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Obx(
-                  () => CustomTextButton(
-                    text: 'Next',
-                    textColor: isDarkMode ? Colors.white : Colors.black,
-                    buttonBackgroundColor: loginController.isDialCodeValid.value
-                        ? primarySwatchColor
-                        : Colors.grey,
-                    handleOnPressed: loginController.isDialCodeValid.value
-                        ? () async {
-                            if (loginController.userPhoneNumber.value == '') {
-                              await EasyLoading.showToast(
-                                'Please, enter your phone number.',
-                              );
-                            } else {
-                              try {
-                                await EasyLoading.show(
-                                    status: 'Connecting...',
-                                    dismissOnTap: false);
-                                final result =
-                                    await InternetAddress.lookup('example.com');
-                                await EasyLoading.dismiss();
-                                if (result.isNotEmpty &&
-                                    result[0].rawAddress.isNotEmpty) {
-                                  final mobile = loginController
-                                          .countryDialCode.value
-                                          .trim() +
-                                      loginController.userPhoneNumber.value
-                                          .trim();
-                                  loginController.registerUser(mobile, context);
-                                }
-                              } on SocketException catch (_) {
-                                await EasyLoading.dismiss();
-                                await EasyLoading.showToast(
-                                    'Unable to connect to the internet.',
-                                    toastPosition:
-                                        EasyLoadingToastPosition.center,
-                                    maskType: EasyLoadingMaskType.clear);
-                              }
-                            }
-                          }
-                        : null,
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: Get.height * 0.04,
+                        ),
+                        child: Text(
+                          'Carrier SMS charges may apply',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 16.0,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            top: Get.width < 768 ? Get.height * 0.4 : 0),
+                        child: Obx(
+                          () => CustomTextButton(
+                            text: 'Next',
+                            textColor: isDarkMode ? Colors.white : Colors.black,
+                            buttonBackgroundColor:
+                                loginController.isDialCodeValid.value
+                                    ? primarySwatchColor
+                                    : Colors.grey,
+                            handleOnPressed: loginController
+                                    .isDialCodeValid.value
+                                ? () async {
+                                    if (loginController.userPhoneNumber.value ==
+                                        '') {
+                                      await EasyLoading.showToast(
+                                        'Please, enter your phone number.',
+                                        toastPosition: Get.width >= 768
+                                            ? EasyLoadingToastPosition.top
+                                            : EasyLoadingToastPosition.center,
+                                      );
+                                    } else {
+                                      await EasyLoading.show(
+                                          status: 'Connecting...',
+                                          dismissOnTap: false);
+                                      if (kIsWeb) {
+                                        var isConnected =
+                                            html.window.navigator.onLine;
+                                        if (isConnected != null) {
+                                          if (isConnected == true) {
+                                            final mobile = '+' +
+                                                loginController
+                                                    .countryDialCode.value
+                                                    .trim() +
+                                                loginController
+                                                    .userPhoneNumber.value
+                                                    .trim();
+                                            loginController.registerUser(
+                                                mobile, context);
+                                            await EasyLoading.dismiss();
+                                            log(mobile);
+                                          } else {
+                                            EasyLoading.showError(
+                                                'Unable to connect to the internet!');
+                                          }
+                                        }
+                                      } else {
+                                        try {
+                                          var connectivityResult =
+                                              await (Connectivity()
+                                                  .checkConnectivity());
+                                          if (connectivityResult ==
+                                                  ConnectivityResult.mobile ||
+                                              connectivityResult ==
+                                                  ConnectivityResult.wifi) {
+                                            bool isConnected =
+                                                await DataConnectionChecker()
+                                                    .hasConnection;
+                                            if (isConnected) {
+                                              final mobile = '+' +
+                                                  loginController
+                                                      .countryDialCode.value
+                                                      .trim() +
+                                                  loginController
+                                                      .userPhoneNumber.value
+                                                      .trim();
+                                              loginController.registerUser(
+                                                  mobile, context);
+                                              await EasyLoading.dismiss();
+                                              log(mobile);
+                                            } else {
+                                              Get.snackbar(
+                                                'Could not connect to the internet.',
+                                                'Network is currently busy. Try again later!',
+                                              );
+                                            }
+                                          } else {
+                                            await EasyLoading.showError(
+                                                'Kindly connect to the internet.');
+                                          }
+                                        } catch (e, S) {
+                                          log(e.toString());
+                                          log(S.toString());
+                                        }
+                                      }
+                                    }
+                                  }
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

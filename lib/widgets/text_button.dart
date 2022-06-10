@@ -21,7 +21,10 @@ class CustomTextButton extends StatelessWidget {
     return TextButton(
       style: ButtonStyle(
         fixedSize: MaterialStateProperty.all(
-          Size.fromWidth(Get.width * 0.3),
+          Size(
+            Get.width * 0.2,
+            Get.height * 0.07,
+          ),
         ),
         foregroundColor:
             MaterialStateProperty.all<Color>(buttonBackgroundColor),
@@ -31,7 +34,7 @@ class CustomTextButton extends StatelessWidget {
       onPressed: handleOnPressed,
       child: Text(
         text,
-        style: TextStyle(color: textColor, fontSize: Get.width * 0.045),
+        style: TextStyle(color: textColor, fontSize: 16),
       ),
     );
   }

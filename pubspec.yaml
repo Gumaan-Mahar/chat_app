@@ -35,6 +35,8 @@ dependencies:
   get: ^4.6.1
   country_list: ^0.0.5
   flutter_easyloading: ^3.0.3
+  connectivity_plus: ^2.3.3
+  data_connection_checker: ^0.3.4
 
 
   # The following adds the Cupertino Icons font to your application.
